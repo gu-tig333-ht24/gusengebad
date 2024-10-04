@@ -31,6 +31,7 @@ class NewPage extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
+                print('Uppgift skickad tillbaka: ${controller.text}');
                 Navigator.pop(context, controller.text);
               },
               child: const Text('Lägg till uppgift'),
