@@ -29,7 +29,7 @@ class TaskProvider extends ChangeNotifier {
   // Lägg till en ny uppgift
   Future<void> addTask(String newTask) async {
     try {
-      _tasks.add(Task(id: 0, task: newTask, isChecked: false)); 
+      _tasks.add(Task(id: '0', task: newTask, isChecked: false));  
       notifyListeners();
       await _apiService.createTask(newTask);
       print('Uppgift skapad på servern');
@@ -40,7 +40,7 @@ class TaskProvider extends ChangeNotifier {
   }
 
   // Ta bort en uppgift
-  Future<void> deleteTask(int id) async {
+  Future<void> deleteTask(String id) async {
     final taskIndex = _tasks.indexWhere((task) => task.id == id);
     if (taskIndex != -1) {
       _tasks.removeAt(taskIndex);
@@ -55,7 +55,7 @@ class TaskProvider extends ChangeNotifier {
   }
 
   // Uppdatera statusen på en uppgift
-  Future<void> updateTaskStatus(int id, bool isChecked) async {
+  Future<void> updateTaskStatus(String id, bool isChecked) async {
     final taskIndex = _tasks.indexWhere((task) => task.id == id);
     if (taskIndex != -1) {
       _tasks[taskIndex] = Task(

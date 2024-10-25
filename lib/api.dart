@@ -4,24 +4,33 @@ import 'task.dart';
 
 class ApiService {
   String apiKey = 'e5aad64f-3dbf-4633-a02c-943d8be9f3c4';
-  final String endpoint = 'https://todoapp-api.apps.k8s.gu.se';
+  final String endpoint = 'https://todoapp-api.apps.k8s.gu.se/todos';
 
-  // Hämta alla uppgifter (GET)
-  Future<List<Task>> getTasks() async {
-    final response = await http.get(Uri.parse(endpoint));
-    print('Statuskod vid hämtning (GET): ${response.statusCode}');
-    if (response.statusCode == 200) {
+// Hämta alla uppgifter (GET)
+Future<List<Task>> getTasks() async {
+  final url = Uri.parse('$endpoint?key=$apiKey');
+  print('Skickar GET-förfrågan till URL: $url');
+  final response = await http.get(url);
+  print('Statuskod vid hämtning (GET): ${response.statusCode}');
+  print('Respons från servern: ${response.body}');
+  
+  if (response.statusCode == 200) {
+    try {
       final List<dynamic> data = json.decode(response.body);
       return data.map((taskJson) => Task.fromJson(taskJson)).toList();
-    } else {
-      throw Exception('Misslyckades med att ladda uppgift');
+    } catch (e) {
+      throw Exception('Misslyckades med att avkoda uppgifter');
     }
+  } else {
+    throw Exception('Misslyckades med att hämta uppgifter');
   }
+}
 
   // Ta bort en uppgift (DELETE)
-  Future<void> deleteTask(int id) async {
-    final response = await http.delete(Uri.parse('$endpoint/$id'));
+  Future<void> deleteTask(String id) async {
+    final response = await http.delete(Uri.parse('$endpoint/$id?key=$apiKey'));
     print('Statuskod vid borttagning (DELETE): ${response.statusCode}');
+    
     if (response.statusCode != 200) {
       throw Exception('Misslyckades med att ta bort uppgift');
     }
@@ -30,24 +39,26 @@ class ApiService {
   // Skapa en ny uppgift (POST)
   Future<void> createTask(String task) async {
     final response = await http.post(
-      Uri.parse(endpoint),
-      body: jsonEncode({'task': task, 'isChecked': false}),
+      Uri.parse('$endpoint?key=$apiKey'),
+      body: jsonEncode({'title': task, 'done': false}),
       headers: {'Content-Type': 'application/json'},
     );
     print('Statuskod vid skapande (POST): ${response.statusCode}');
-    if (response.statusCode != 201) {
+    
+    if (response.statusCode != 200) {
       throw Exception('Misslyckades med att skapa uppgift');
     }
   }
 
   // Uppdatera en uppgift (PUT)
-  Future<void> updateTask(int id, Task task) async {
+  Future<void> updateTask(String id, Task task) async {
     final response = await http.put(
-      Uri.parse('$endpoint/$id'),
+      Uri.parse('$endpoint/$id?key=$apiKey'),
       body: jsonEncode(task.toJson()),
       headers: {'Content-Type': 'application/json'},
     );
     print('Statuskod vid uppdatering (PUT): ${response.statusCode}');
+    
     if (response.statusCode != 200) {
       throw Exception('Misslyckades med att uppdatera uppgift');
     }
