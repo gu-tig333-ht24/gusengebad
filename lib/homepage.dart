@@ -3,37 +3,68 @@ import 'package:provider/provider.dart';
 import 'task_provider.dart';
 import 'checkboxwidget.dart';
 import 'newpage.dart';
+import 'task.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  HomePageState createState() => HomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class HomePageState extends State<HomePage> {
-  @override
-  void initState() {
-    super.initState();
-    Provider.of<TaskProvider>(context, listen: false).fetchTasks();
-  }
+class _HomePageState extends State<HomePage> {
+  String _filter = 'all';
 
   @override
   Widget build(BuildContext context) {
     final taskProvider = Provider.of<TaskProvider>(context);
 
+    // Filter
+    List<Task> filteredTasks;
+    if (_filter == 'completed') {
+      filteredTasks = taskProvider.tasks.where((task) => task.isChecked).toList();
+    } else if (_filter == 'incomplete') {
+      filteredTasks = taskProvider.tasks.where((task) => !task.isChecked).toList();
+    } else {
+      filteredTasks = taskProvider.tasks;
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
         title: const Text('TIG333 TODO'),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (String value) {
+              setState(() {
+                _filter = value;
+              });
+            },
+            itemBuilder: (BuildContext context) {
+              return <String>['all', 'completed', 'incomplete'].map((String value) {
+                return PopupMenuItem<String>(
+                  value: value,
+                  child: Text(
+                    value == 'all'
+                        ? 'Visa alla'
+                        : value == 'completed'
+                            ? 'Visade avklarade'
+                            : 'Visade icke-avklarade',
+                  ),
+                );
+              }).toList();
+            },
+            tooltip: 'Visa meny',
+          ),
+        ],
       ),
       body: taskProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
               padding: const EdgeInsets.all(20),
-              itemCount: taskProvider.tasks.length,
+              itemCount: filteredTasks.length,
               itemBuilder: (context, index) {
-                final task = taskProvider.tasks[index];
+                final task = filteredTasks[index];
                 return Column(
                   children: [
                     Row(
