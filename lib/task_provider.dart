@@ -11,10 +11,10 @@ class TaskProvider extends ChangeNotifier {
   List<Task> get tasks => _tasks;
   bool get isLoading => _isLoading;
 
-  // Hämta alla uppgifter från API
+  // Hämta alla uppgifter
   Future<void> fetchTasks() async {
     _isLoading = true;
-    notifyListeners();  // Notifiera lyssnare om att data håller på att laddas
+    notifyListeners();
     print('Hämtar uppgifter från API');
     try {
       _tasks = await _apiService.getTasks();
@@ -23,7 +23,7 @@ class TaskProvider extends ChangeNotifier {
       print('Kunde inte hämta uppgifter: $e');
     } finally {
       _isLoading = false;
-      notifyListeners();  // Uppdatera lyssnare när API-anropet är klart
+      notifyListeners();
     }
   }
 
@@ -32,13 +32,13 @@ class TaskProvider extends ChangeNotifier {
     String newId = DateTime.now().millisecondsSinceEpoch.toString();
     final newTask = Task(id: newId, task: title, isChecked: false);
     _tasks.add(newTask);
-    notifyListeners();  // Uppdatera lyssnare om att en uppgift har lagts till
+    notifyListeners();
     try {
       await _apiService.createTask(title);
       print('Uppgift skapad på servern');
     } catch (e) {
       _tasks.remove(newTask);
-      notifyListeners();  // Återställ om något går fel
+      notifyListeners();
       print('Kunde inte lägga till uppgiften på servern: $e');
     }
   }
@@ -49,13 +49,13 @@ class TaskProvider extends ChangeNotifier {
     if (taskIndex != -1) {
       final taskToRemove = _tasks[taskIndex];
       _tasks.removeAt(taskIndex);
-      notifyListeners();  // Uppdatera lyssnare om att en uppgift har tagits bort
+      notifyListeners();
       try {
         await _apiService.deleteTask(id);
         print('Uppgift borttagen från servern');
       } catch (e) {
         _tasks.insert(taskIndex, taskToRemove);
-        notifyListeners();  // Återställ om något går fel
+        notifyListeners();
         print('Kunde inte ta bort uppgiften: $e');
       }
     }
@@ -71,13 +71,13 @@ class TaskProvider extends ChangeNotifier {
         task: originalTask.task,
         isChecked: isChecked,
       );
-      notifyListeners();  // Uppdatera lyssnare om att statusen på en uppgift har ändrats
+      notifyListeners();
       try {
         await _apiService.updateTask(id, _tasks[taskIndex]);
         print('Uppgiftens status uppdaterad på servern');
       } catch (e) {
         _tasks[taskIndex] = originalTask;
-        notifyListeners();  // Återställ om något går fel
+        notifyListeners();
         print('Kunde inte uppdatera uppgiften på servern: $e');
       }
     }

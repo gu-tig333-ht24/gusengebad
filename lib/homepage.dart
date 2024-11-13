@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-      taskProvider.fetchTasks();  // Hämta uppgifter efter att HomePage har byggts
+      taskProvider.fetchTasks();
     });
   }
 
