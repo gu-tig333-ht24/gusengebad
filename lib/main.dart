@@ -6,11 +6,7 @@ import 'homepage.dart';
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (context) {
-        final taskProvider = TaskProvider();
-        taskProvider.fetchTasks();
-        return taskProvider;
-      },
+      create: (context) => TaskProvider(),
       child: const MyApp(),
     ),
   );

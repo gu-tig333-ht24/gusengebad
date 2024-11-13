@@ -11,7 +11,7 @@ class TaskProvider extends ChangeNotifier {
   List<Task> get tasks => _tasks;
   bool get isLoading => _isLoading;
 
-  // Hämta alla uppgifter från API
+  // Hämta alla uppgifter
   Future<void> fetchTasks() async {
     _isLoading = true;
     notifyListeners();
@@ -21,21 +21,25 @@ class TaskProvider extends ChangeNotifier {
       print('Uppgifter hämtade: ${_tasks.length}');
     } catch (e) {
       print('Kunde inte hämta uppgifter: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    _isLoading = false;
-    notifyListeners();
   }
 
   // Lägg till en ny uppgift
-  Future<void> addTask(String newTask) async {
+  Future<void> addTask(String title) async {
+    String newId = DateTime.now().millisecondsSinceEpoch.toString();
+    final newTask = Task(id: newId, task: title, isChecked: false);
+    _tasks.add(newTask);
+    notifyListeners();
     try {
-      _tasks.add(Task(id: '0', task: newTask, isChecked: false));  
-      notifyListeners();
-      await _apiService.createTask(newTask);
+      await _apiService.createTask(title);
       print('Uppgift skapad på servern');
-      await fetchTasks();
     } catch (e) {
-      print('Kunde inte lägga till uppgift: $e');
+      _tasks.remove(newTask);
+      notifyListeners();
+      print('Kunde inte lägga till uppgiften på servern: $e');
     }
   }
 
@@ -43,12 +47,15 @@ class TaskProvider extends ChangeNotifier {
   Future<void> deleteTask(String id) async {
     final taskIndex = _tasks.indexWhere((task) => task.id == id);
     if (taskIndex != -1) {
+      final taskToRemove = _tasks[taskIndex];
       _tasks.removeAt(taskIndex);
       notifyListeners();
       try {
         await _apiService.deleteTask(id);
         print('Uppgift borttagen från servern');
       } catch (e) {
+        _tasks.insert(taskIndex, taskToRemove);
+        notifyListeners();
         print('Kunde inte ta bort uppgiften: $e');
       }
     }
@@ -58,18 +65,20 @@ class TaskProvider extends ChangeNotifier {
   Future<void> updateTaskStatus(String id, bool isChecked) async {
     final taskIndex = _tasks.indexWhere((task) => task.id == id);
     if (taskIndex != -1) {
+      final originalTask = _tasks[taskIndex];
       _tasks[taskIndex] = Task(
-        id: _tasks[taskIndex].id,
-        task: _tasks[taskIndex].task,
+        id: originalTask.id,
+        task: originalTask.task,
         isChecked: isChecked,
       );
       notifyListeners();
-
       try {
         await _apiService.updateTask(id, _tasks[taskIndex]);
         print('Uppgiftens status uppdaterad på servern');
       } catch (e) {
-        print('Kunde inte uppdatera uppgiften: $e');
+        _tasks[taskIndex] = originalTask;
+        notifyListeners();
+        print('Kunde inte uppdatera uppgiften på servern: $e');
       }
     }
   }
