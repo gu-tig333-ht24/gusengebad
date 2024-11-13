@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'task.dart';
 
 class ApiService {
-  String apiKey = 'e5aad64f-3dbf-4633-a02c-943d8be9f3c4';
+  String apiKey = '4c9de0dd-ffbf-42b4-acd1-0e312e91085b';
   final String endpoint = 'https://todoapp-api.apps.k8s.gu.se/todos';
 
 // Hämta alla uppgifter (GET)
