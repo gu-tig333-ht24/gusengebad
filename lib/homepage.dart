@@ -16,19 +16,16 @@ class _HomePageState extends State<HomePage> {
   String _filter = 'all';
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      taskProvider.fetchTasks();  // Hämta uppgifter efter att HomePage har byggts
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final taskProvider = Provider.of<TaskProvider>(context);
-
-    // Filter
-    List<Task> filteredTasks;
-    if (_filter == 'completed') {
-      filteredTasks = taskProvider.tasks.where((task) => task.isChecked).toList();
-    } else if (_filter == 'incomplete') {
-      filteredTasks = taskProvider.tasks.where((task) => !task.isChecked).toList();
-    } else {
-      filteredTasks = taskProvider.tasks;
-    }
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
@@ -58,45 +55,59 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: taskProvider.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: filteredTasks.length,
-              itemBuilder: (context, index) {
-                final task = filteredTasks[index];
-                return Column(
-                  children: [
-                    Row(
+      body: Consumer<TaskProvider>(
+        builder: (context, taskProvider, child) {
+          // Filtera uppgifterna baserat på valt filter
+          List<Task> filteredTasks;
+          if (_filter == 'completed') {
+            filteredTasks = taskProvider.tasks.where((task) => task.isChecked).toList();
+          } else if (_filter == 'incomplete') {
+            filteredTasks = taskProvider.tasks.where((task) => !task.isChecked).toList();
+          } else {
+            filteredTasks = taskProvider.tasks;
+          }
+
+          return taskProvider.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ListView.builder(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: filteredTasks.length,
+                  itemBuilder: (context, index) {
+                    final task = filteredTasks[index];
+                    return Column(
                       children: [
-                        Expanded(
-                          child: CheckboxWidget(
-                            task: task.task,
-                            isChecked: task.isChecked,
-                            onChanged: (bool? value) {
-                              if (value != null) {
-                                taskProvider.updateTaskStatus(task.id, value);
-                              }
-                            },
-                          ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: CheckboxWidget(
+                                task: task.task,
+                                isChecked: task.isChecked,
+                                onChanged: (bool? value) {
+                                  if (value != null) {
+                                    taskProvider.updateTaskStatus(task.id, value);
+                                  }
+                                },
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.black),
+                              onPressed: () {
+                                taskProvider.deleteTask(task.id);
+                              },
+                            ),
+                          ],
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.black),
-                          onPressed: () {
-                            taskProvider.deleteTask(task.id);
-                          },
+                        const SizedBox(height: 1),
+                        Container(
+                          height: 1,
+                          color: Colors.black,
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 1),
-                    Container(
-                      height: 1,
-                      color: Colors.black,
-                    ),
-                  ],
+                    );
+                  },
                 );
-              },
-            ),
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         tooltip: 'Lägg till uppgifter',
         onPressed: () async {
@@ -105,7 +116,7 @@ class _HomePageState extends State<HomePage> {
             MaterialPageRoute(builder: (context) => const NewPage()),
           );
           if (newTask != null && newTask.isNotEmpty) {
-            taskProvider.addTask(newTask);
+            context.read<TaskProvider>().addTask(newTask);
           }
         },
         child: const Icon(Icons.add),

@@ -5,13 +5,10 @@ import 'homepage.dart';
 
 void main() {
   runApp(
+    // Omge hela applikationen med ChangeNotifierProvider
     ChangeNotifierProvider(
-      create: (context) {
-        final taskProvider = TaskProvider();
-        taskProvider.fetchTasks();
-        return taskProvider;
-      },
-      child: const MyApp(),
+      create: (context) => TaskProvider(), // Skapar och tillhandahåller TaskProvider
+      child: const MyApp(), // Appen använder Provider
     ),
   );
 }

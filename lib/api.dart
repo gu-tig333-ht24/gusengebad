@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'task.dart';
 
 class ApiService {
-  String apiKey = 'e5aad64f-3dbf-4633-a02c-943d8be9f3c4';
+  String apiKey = '9091bef7-ae98-4d66-bc89-e4bdc569b4b3';
   final String endpoint = 'https://todoapp-api.apps.k8s.gu.se/todos';
 
 // Hämta alla uppgifter (GET)
@@ -22,6 +22,7 @@ Future<List<Task>> getTasks() async {
       throw Exception('Misslyckades med att avkoda uppgifter');
     }
   } else {
+    // print('Serverfel: ${response.statusCode} - ${response.body}');
     throw Exception('Misslyckades med att hämta uppgifter');
   }
 }
