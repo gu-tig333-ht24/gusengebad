@@ -1,7 +1,7 @@
 class Task {
   final String id;
   final String task;
-  final bool isChecked;
+  bool isChecked;
 
   Task({required this.id, required this.task, required this.isChecked});
 
